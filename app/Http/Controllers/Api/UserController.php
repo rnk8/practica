@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
-
-use App\Helper\ResponseHelper;
+namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -19,15 +18,13 @@ class UserController extends Controller
     {
         try {
             $user = User::get();
-            return ResponseHelper::success(
-                'success',
-                'Lista de usuarios obtenida con éxito',
+            return response()->json(
                 $user,
                 200
             );
         } catch (\Throwable $th) {
             Log::error('Error al obtener los usuarios: ' . $th->getMessage());
-            return ResponseHelper::error('error', 'No se pudieron obtener los usuarios', 500);
+            return response()->json(['message' => 'No se pudo'], 422);
         }
     }
 
@@ -44,10 +41,13 @@ class UserController extends Controller
                     'password' => Hash::make($request->password),
                 ]
             );
-            return ResponseHelper::success('success', 'Usuario registrado con exito', $user, 201);
+            return response()->json(
+                $user,
+                200
+            );
         } catch (\Throwable $th) {
             Log::error('No Se Pudo' . $th->getMessage() . 'En la linea' . $th->getLine());
-            return ResponseHelper::error('error', 'Error al registrar el Usuario', 400);
+            return response()->json(['message' => 'No se pudo'], 422);
         }
     }
 
@@ -59,12 +59,15 @@ class UserController extends Controller
         try {
             $post = User::find($id);
             if (!$post) {
-                return ResponseHelper::error('error', 'Usuario no encontrado', 404);
+                return response()->json(['message' => 'No se pudo'], 422);
             }
-            return ResponseHelper::success('success', 'Usuario encontrado con exito',  $post, 200);
+            return response()->json(
+                $post,
+                200
+            );
         } catch (\Throwable $th) {
             Log::error('No Se Pudo' . $th->getMessage() . 'En la linea' . $th->getLine());
-            return ResponseHelper::error('error', 'Error al buscar el Usuario', 400);
+            return response()->json(['message' => 'No se pudo'], 422);
         }
     }
 
@@ -73,13 +76,16 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request -> validate([
+        $request->validate([
             'name' => 'required|string',
             'email' => 'required|email',
         ]);
-        $post = User::find($id);
-        $post->update($request->all());
-        return ResponseHelper::success('success', 'Usuario actualizado con exito',  $post, 200);
+        $user = User::find($id);
+        $user->update($request->all());
+        return response()->json(
+            $user,
+            200
+        );
     }
 
     /**
@@ -89,8 +95,9 @@ class UserController extends Controller
     {
         $userId = User::find($id);
         $userId->delete();
-        return ResponseHelper::success('success', 'Usuario eliminado con exito',  $userId, 200);
+        return response()->json(['message' => 'Se elimino'], 422);
     }
+
     public function changePassword(Request $request)
     {
         try {
@@ -102,7 +109,7 @@ class UserController extends Controller
 
             // Verificar que la contraseña actual es correcta
             if (!Hash::check($request->current_password, $user->password)) {
-                return ResponseHelper::error('error', 'La contraseña actual es incorrecta', 401);
+                return response()->json(['message' => 'Contraseña mal '], 422);
             }
 
             // Actualizar la contraseña
@@ -113,10 +120,10 @@ class UserController extends Controller
             // Opcional: Revocar todos los tokens activos (forzar nuevo inicio de sesión)
             //$user->tokens()->delete();
 
-            return ResponseHelper::success('success', 'Contraseña actualizada correctamente', [], 200);
+            return response()->json(['message' => 'se pudo'], 200);
         } catch (\Throwable $th) {
             Log::error('Error al cambiar la contraseña: ' . $th->getMessage() . ' en la línea ' . $th->getLine());
-            return ResponseHelper::error('error', 'No se pudo cambiar la contraseña', 400);
+            return response()->json(['message' => 'se pudo'], 400);
         }
     }
 

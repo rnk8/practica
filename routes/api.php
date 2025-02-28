@@ -1,35 +1,34 @@
 <?php
 
-
+use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\LikeController;
+use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\CommentController;
-use App\Http\Controllers\LikeController;
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\UserController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('/users', UserController::class);
-    Route::post('/update', [UserController::class, 'changePassword']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::apiResource('posts', PostController::class);
-    Route::get('postall', [PostController::class, 'posts']);
-
-    Route::apiResource('comments', CommentController::class);
-    Route::post('/posts/{postId}/comments', [CommentController::class, 'store']);
-
-    
-    Route::post('/posts/{postId}/like', [LikeController::class, 'LikePost']);
-    Route::delete('/posts/{postId}/unlike', [LikeController::class, 'Unlike']);
-});
-
-
-Route::post('/register', [AuthController::class, 'register']);
+// Rutas públicas
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 
+// Rutas protegidas
+Route::middleware('auth:sanctum')->group(function () {
+    // Usuario actual
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    
+    // Posts
+    Route::apiResource('posts', PostController::class);
+    Route::apiResource('users', UserController::class);
+    
+    // Comentarios (mediante rutas anidadas)
+    Route::apiResource('posts.comments', CommentController::class)->shallow();
+    
+    // Likes
+    Route::post('posts/{post}/like', [LikeController::class, 'likePost']);
+    Route::delete('posts/{post}/like', [LikeController::class, 'unlikePost']);
+    Route::post('comments/{comment}/like', [LikeController::class, 'likeComment']);
+    Route::delete('comments/{comment}/like', [LikeController::class, 'unlikeComment']);
+});

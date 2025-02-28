@@ -35,17 +35,17 @@ class RegisterRequest extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
 
-     public function messages(): array
-     {
-         return [
-             'name.nullable' => 'Pon el nombre',
-             'email.required' => 'Pon el email',
-             'email.email' => 'Pon un email valido',
-             'email.unique' => 'Email ya registrado',
-             'password.required' => 'Contraseña requerida',
-             'passsword.min' => 'Pon una ontraseña minima de 8 caracteres',
-    ];
-     }
+    public function messages(): array
+    {
+        return [
+            'name.nullable' => 'Pon el nombre',
+            'email.required' => 'Pon el email',
+            'email.email' => 'Pon un email valido',
+            'email.unique' => 'Email ya registrado',
+            'password.required' => 'Contraseña requerida',
+            'passsword.min' => 'Pon una ontraseña minima de 8 caracteres',
+        ];
+    }
 
 
 }

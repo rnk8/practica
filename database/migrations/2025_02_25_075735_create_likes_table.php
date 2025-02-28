@@ -9,16 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('likes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('post_id')->constrained('posts')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->morphs('likeable');
+            
             $table->timestamps();
+            
+            // Asegura unicidad de likes (un usuario solo puede dar like una vez)
+            $table->unique(['user_id', 'likeable_id', 'likeable_type']);
         });
     }
-
+    
     /**
      * Reverse the migrations.
      */

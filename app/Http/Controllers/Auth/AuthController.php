@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Helper\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -24,10 +22,13 @@ class AuthController extends Controller
                     'password' => Hash::make($request->password),
                 ]
             );
-            return ResponseHelper::success('success', 'Usuario registrado con exito', $user, 201);
+            return response()->json(
+                $user,
+                200
+            );
         } catch (\Throwable $th) {
             Log::error('No Se Pudo' . $th->getMessage() . 'En la linea' . $th->getLine());
-            return ResponseHelper::error('error', 'Error al registrar el usuario', 400);
+            return response()->json(['message' => 'No se pudo'], 422);
         }
     }
 
@@ -35,17 +36,18 @@ class AuthController extends Controller
     {
         try {
             if (!Auth::attempt($request->only('email', 'password'))) {
-                return ResponseHelper::error('error', 'Credenciales incorrectas', 401);
+                return response()->json(['message' => 'Credenciales Incorrectas'], 422);
             }
             $user = Auth::user();
             $token = $user->createToken('token')->plainTextToken;
-            return ResponseHelper::success('success', 'Usuario logueado con exito',  $token, 200);
-        } 
-        catch (\Throwable $th) {
+            return response()->json(
+                $token,
+                200
+            );
+        } catch (\Throwable $th) {
             Log::error('No Se Pudo' . $th->getMessage() . 'En la linea' . $th->getLine());
+            return response()->json(['message' => 'No se pudo'], 422);
 
-            return ResponseHelper::error('error', 'Error al logear el usuario');
-   
         }
     }
 
@@ -53,14 +55,12 @@ class AuthController extends Controller
     {
         try {
             Auth::user()->tokens()->delete();
-            return ResponseHelper::success('success', 'Sesión cerrada con exito', [], 200);
+            return response()->json(
+                200
+            );
         } catch (\Throwable $th) {
             Log::error('No Se Pudo' . $th->getMessage() . 'En la linea' . $th->getLine());
-            return ResponseHelper::error('error', 'Error al cerrar la sesión', 400);
+            return response()->json(['message' => 'No se pudo'], 422);
         }
-    }
-
-    public function passwordUpdate(Request $request) {
-
     }
 }
